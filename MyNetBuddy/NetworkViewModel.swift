@@ -10,7 +10,11 @@ final class NetworkViewModel: ObservableObject {
 
     private let serviceManager: NetworkServiceManager
 
-    init(serviceManager: NetworkServiceManager = NetworkServiceManager()) {
+    convenience init() {
+        self.init(serviceManager: NetworkServiceManager())
+    }
+
+    init(serviceManager: NetworkServiceManager) {
         self.serviceManager = serviceManager
     }
 
@@ -50,11 +54,13 @@ final class NetworkViewModel: ObservableObject {
 
     func prioritize(_ priority: NetworkPriority) {
         do {
-            try serviceManager.prioritize(priority)
-            refresh()
+            let snapshot = try serviceManager.prioritize(priority)
+            services = snapshot.services
+            preferredPriority = snapshot.preferredPriority
             statusMessage = priority == .ethernet
                 ? "Ethernet quedó al frente del orden de servicios."
                 : "Wi-Fi quedó al frente del orden de servicios."
+            errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
         }

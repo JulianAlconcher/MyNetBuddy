@@ -186,6 +186,8 @@ struct MenuBarContentView: View {
     }
 }
 
-#Preview {
-    MenuBarContentView(viewModel: NetworkViewModel.preview)
+struct MenuBarContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        MenuBarContentView(viewModel: NetworkViewModel.preview)
+    }
 }

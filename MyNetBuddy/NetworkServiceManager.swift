@@ -33,22 +33,31 @@ final class NetworkServiceManager {
         return snapshot(from: fallbackServices)
     }
 
-    func prioritize(_ priority: NetworkPriority) throws {
-        let snapshot = try fetchSnapshot()
-        let reordered = reorder(serviceNames: snapshot.services.map(\.displayName), using: snapshot.services, priority: priority)
-        try runNetworkSetup(arguments: ["-ordernetworkservices"] + reordered)
+    func prioritize(_ priority: NetworkPriority) throws -> NetworkSnapshot {
+        let orderedServices = try fetchOrderedServicesForPrioritization()
+        let reordered = reorder(parsedServices: orderedServices, priority: priority)
+        let updatedOrderOutput = try reorderAndFetchOrder(serviceNames: reordered.map(\.displayName))
+        let updatedServices = parseServiceOrder(from: updatedOrderOutput)
+
+        guard !updatedServices.isEmpty else {
+            throw NetworkServiceError.missingServices
+        }
+
+        return snapshot(from: updatedServices)
     }
 
     private func fetchOrderedServicesFromNetworkSetup() throws -> [ParsedService] {
-        let orderOutput = try runNetworkSetup(arguments: ["-listnetworkserviceorder"])
+        let orderOutput: String
+
+        orderOutput = try runNetworkSetup(arguments: ["-listnetworkserviceorder"])
+
         return parseServiceOrder(from: orderOutput)
     }
 
     private func snapshot(from parsedServices: [ParsedService]) -> NetworkSnapshot {
-        let preferredKind = defaultPreferredKind(from: parsedServices)
-        let sortedServices = sortParsedServices(parsedServices, preferredKind: preferredKind)
+        let preferredKind = preferredPriority(from: parsedServices)
 
-        let services = sortedServices.enumerated().map { index, parsed in
+        let services = parsedServices.enumerated().map { index, parsed in
             let ipAddress = currentIPAddress(for: parsed.device)
             let linkDescription = linkSpeedDescription(for: parsed.device, kind: parsed.kind)
             let detailSummary = detailSummary(for: parsed.device, kind: parsed.kind)
@@ -248,44 +257,44 @@ final class NetworkServiceManager {
 
         flushCurrentBlock()
 
-        let activeServices = services.filter { currentIPAddress(for: $0.device) != nil }
-        let inactiveServices = services.filter { currentIPAddress(for: $0.device) == nil }
+        let activeServices = services
+            .filter { currentIPAddress(for: $0.device) != nil }
+            .sorted(by: fallbackPrioritySort)
+        let inactiveServices = services
+            .filter { currentIPAddress(for: $0.device) == nil }
+            .sorted(by: fallbackPrioritySort)
         return activeServices + inactiveServices
     }
 
-    private func defaultPreferredKind(from services: [ParsedService]) -> NetworkPriority? {
-        if services.contains(where: { $0.kind == .ethernet }) {
-            return .ethernet
+    private func fetchOrderedServicesForPrioritization() throws -> [ParsedService] {
+        let orderedServices: [ParsedService]
+
+        if let services = try? fetchOrderedServicesFromNetworkSetup(), !services.isEmpty {
+            orderedServices = services
+        } else {
+            let orderOutput = try runPrivilegedNetworkSetup(arguments: ["-listnetworkserviceorder"])
+            orderedServices = parseServiceOrder(from: orderOutput)
         }
-        if services.contains(where: { $0.kind == .wifi }) {
-            return .wifi
+
+        guard !orderedServices.isEmpty else {
+            throw NetworkServiceError.missingServices
+        }
+
+        return orderedServices
+    }
+
+    private func preferredPriority(from services: [ParsedService]) -> NetworkPriority? {
+        for service in services {
+            switch service.kind {
+            case .ethernet:
+                return .ethernet
+            case .wifi:
+                return .wifi
+            case .other:
+                continue
+            }
         }
         return nil
-    }
-
-    private func sortParsedServices(_ services: [ParsedService], preferredKind: NetworkPriority?) -> [ParsedService] {
-        services.sorted { lhs, rhs in
-            priorityRank(for: lhs.kind, preferredKind: preferredKind) < priorityRank(for: rhs.kind, preferredKind: preferredKind)
-        }
-    }
-
-    private func priorityRank(for kind: NetworkServiceKind, preferredKind: NetworkPriority?) -> Int {
-        switch (preferredKind, kind) {
-        case (.ethernet, .ethernet):
-            return 0
-        case (.ethernet, .wifi):
-            return 1
-        case (.wifi, .wifi):
-            return 0
-        case (.wifi, .ethernet):
-            return 1
-        case (_, .other):
-            return 2
-        case (.none, .ethernet):
-            return 0
-        case (.none, .wifi):
-            return 1
-        }
     }
 
     private func lineName(from line: String) -> String {
@@ -352,15 +361,128 @@ final class NetworkServiceManager {
         }
     }
 
+    private func fallbackPrioritySort(lhs: ParsedService, rhs: ParsedService) -> Bool {
+        fallbackPriorityRank(lhs.kind) < fallbackPriorityRank(rhs.kind)
+    }
+
+    private func fallbackPriorityRank(_ kind: NetworkServiceKind) -> Int {
+        switch kind {
+        case .ethernet:
+            return 0
+        case .wifi:
+            return 1
+        case .other:
+            return 2
+        }
+    }
+
     private func runNetworkSetup(arguments: [String]) throws -> String {
         let result = runCommand(launchPath: "/usr/sbin/networksetup", arguments: arguments)
 
         guard result.exitCode == 0 else {
-            let reason = result.stderr.isEmpty ? "No se pudo ejecutar networksetup." : result.stderr
+            let reason = errorMessage(from: result, defaultMessage: "No se pudo ejecutar networksetup.")
             throw NetworkServiceError.commandFailed(reason.trimmingCharacters(in: .whitespacesAndNewlines))
         }
 
         return result.stdout
+    }
+
+    private func runPrivilegedNetworkSetup(arguments: [String]) throws -> String {
+        let command = (["/usr/sbin/networksetup"] + arguments)
+            .map(shellEscaped)
+            .joined(separator: " ")
+        return try runPrivilegedShellCommand(command)
+    }
+
+    private func errorMessage(from result: CommandResult, defaultMessage: String) -> String {
+        let stderr = result.stderr.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !stderr.isEmpty {
+            return stderr
+        }
+
+        let stdout = result.stdout.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !stdout.isEmpty {
+            return stdout
+        }
+
+        return defaultMessage
+    }
+
+    private func privilegedErrorMessage(from result: CommandResult, defaultMessage: String) -> String {
+        let rawMessage = errorMessage(from: result, defaultMessage: defaultMessage)
+        let lowercased = rawMessage.lowercased()
+
+        if lowercased.contains("user canceled") || rawMessage.contains("(-128)") {
+            return "Se canceló la autenticación de administrador."
+        }
+
+        if lowercased.contains("administrator user name or password") || rawMessage.contains("(-60005)") {
+            return "El usuario o la contraseña de un administrador de macOS no son válidos."
+        }
+
+        if lowercased.contains("authorization was denied") {
+            return "No se autorizó el acceso de administrador."
+        }
+
+        if lowercased.contains("not allowed assistive access") {
+            return "macOS bloqueó la autorización. Probá abrir la app desde Xcode o revisá los permisos del sistema."
+        }
+
+        if lowercased.contains("wrong number of network services") {
+            return "macOS rechazó el cambio porque faltaban servicios en el reordenamiento. Volvé a intentar con la versión actualizada."
+        }
+
+        return rawMessage
+    }
+
+    private func reorder(parsedServices: [ParsedService], priority: NetworkPriority) -> [ParsedService] {
+        let prioritizedServices = parsedServices.filter { service in
+            switch priority {
+            case .ethernet:
+                return service.kind == .ethernet
+            case .wifi:
+                return service.kind == .wifi
+            }
+        }
+        let remainingServices = parsedServices.filter { service in
+            !prioritizedServices.contains { $0.displayName == service.displayName }
+        }
+        return prioritizedServices + remainingServices
+    }
+
+    private func reorderAndFetchOrder(serviceNames: [String]) throws -> String {
+        let reorderCommand = (["/usr/sbin/networksetup", "-ordernetworkservices"] + serviceNames)
+            .map(shellEscaped)
+            .joined(separator: " ")
+        let listCommand = ["/usr/sbin/networksetup", "-listnetworkserviceorder"]
+            .map(shellEscaped)
+            .joined(separator: " ")
+
+        return try runPrivilegedShellCommand("\(reorderCommand) && \(listCommand)")
+    }
+
+    private func runPrivilegedShellCommand(_ command: String) throws -> String {
+        let script = "do shell script \(appleScriptString(command)) with administrator privileges"
+        let result = runCommand(launchPath: "/usr/bin/osascript", arguments: ["-e", script])
+
+        guard result.exitCode == 0 else {
+            let defaultMessage = "No se pudo ejecutar el comando con permisos de administrador."
+            let reason = privilegedErrorMessage(from: result, defaultMessage: defaultMessage)
+            throw NetworkServiceError.commandFailed(reason.trimmingCharacters(in: .whitespacesAndNewlines))
+        }
+
+        return result.stdout
+    }
+
+    private func shellEscaped(_ string: String) -> String {
+        "'\(string.replacingOccurrences(of: "'", with: "'\\''"))'"
+    }
+
+    private func appleScriptString(_ string: String) -> String {
+        let escaped = string
+            .replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "\"", with: "\\\"")
+        return "\"\(escaped)\""
     }
 
     private func runQuietCommand(launchPath: String, arguments: [String]) -> String {
