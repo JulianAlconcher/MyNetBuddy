@@ -1,0 +1,16 @@
+{
+  "source": "/Users/julianalconcher/Documents/MyNetBuddy/MyNetBuddy/MyNetBuddyApp.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "MyNetBuddy",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 15
+        }
+      }
+    ]
+  },
+  "version": 1
+}

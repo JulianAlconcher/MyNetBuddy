@@ -1,0 +1,79 @@
+{
+  "" : {
+    "diagnostics" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/MyNetBuddy-primary.dia",
+    "emit-module-dependencies" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/MyNetBuddy-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/MyNetBuddy-primary-emit-module.dia",
+    "pch" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/MyNetBuddy-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/MyNetBuddy-primary.swiftdeps"
+  },
+  "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "const-values" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/GeneratedAssetSymbols.swiftconstvalues",
+    "dependencies" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/GeneratedAssetSymbols.d",
+    "diagnostics" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/GeneratedAssetSymbols.dia",
+    "index-unit-output-path" : "/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "llvm-bc" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/GeneratedAssetSymbols.bc",
+    "object" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "swift-dependencies" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/GeneratedAssetSymbols.swiftdeps",
+    "swiftmodule" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/GeneratedAssetSymbols~partial.swiftmodule"
+  },
+  "/Users/julianalconcher/Documents/MyNetBuddy/MyNetBuddy/ContentView.swift" : {
+    "const-values" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/ContentView.swiftconstvalues",
+    "dependencies" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/ContentView.d",
+    "diagnostics" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/ContentView.dia",
+    "index-unit-output-path" : "/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/ContentView.o",
+    "llvm-bc" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/ContentView.bc",
+    "object" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/ContentView.o",
+    "swift-dependencies" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/ContentView.swiftdeps",
+    "swiftmodule" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/ContentView~partial.swiftmodule"
+  },
+  "/Users/julianalconcher/Documents/MyNetBuddy/MyNetBuddy/MenuBarContentView.swift" : {
+    "const-values" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/MenuBarContentView.swiftconstvalues",
+    "dependencies" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/MenuBarContentView.d",
+    "diagnostics" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/MenuBarContentView.dia",
+    "index-unit-output-path" : "/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/MenuBarContentView.o",
+    "llvm-bc" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/MenuBarContentView.bc",
+    "object" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/MenuBarContentView.o",
+    "swift-dependencies" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/MenuBarContentView.swiftdeps",
+    "swiftmodule" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/MenuBarContentView~partial.swiftmodule"
+  },
+  "/Users/julianalconcher/Documents/MyNetBuddy/MyNetBuddy/MyNetBuddyApp.swift" : {
+    "const-values" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/MyNetBuddyApp.swiftconstvalues",
+    "dependencies" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/MyNetBuddyApp.d",
+    "diagnostics" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/MyNetBuddyApp.dia",
+    "index-unit-output-path" : "/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/MyNetBuddyApp.o",
+    "llvm-bc" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/MyNetBuddyApp.bc",
+    "object" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/MyNetBuddyApp.o",
+    "swift-dependencies" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/MyNetBuddyApp.swiftdeps",
+    "swiftmodule" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/MyNetBuddyApp~partial.swiftmodule"
+  },
+  "/Users/julianalconcher/Documents/MyNetBuddy/MyNetBuddy/NetworkModels.swift" : {
+    "const-values" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/NetworkModels.swiftconstvalues",
+    "dependencies" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/NetworkModels.d",
+    "diagnostics" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/NetworkModels.dia",
+    "index-unit-output-path" : "/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/NetworkModels.o",
+    "llvm-bc" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/NetworkModels.bc",
+    "object" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/NetworkModels.o",
+    "swift-dependencies" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/NetworkModels.swiftdeps",
+    "swiftmodule" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/NetworkModels~partial.swiftmodule"
+  },
+  "/Users/julianalconcher/Documents/MyNetBuddy/MyNetBuddy/NetworkServiceManager.swift" : {
+    "const-values" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/NetworkServiceManager.swiftconstvalues",
+    "dependencies" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/NetworkServiceManager.d",
+    "diagnostics" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/NetworkServiceManager.dia",
+    "index-unit-output-path" : "/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/NetworkServiceManager.o",
+    "llvm-bc" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/NetworkServiceManager.bc",
+    "object" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/NetworkServiceManager.o",
+    "swift-dependencies" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/NetworkServiceManager.swiftdeps",
+    "swiftmodule" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/NetworkServiceManager~partial.swiftmodule"
+  },
+  "/Users/julianalconcher/Documents/MyNetBuddy/MyNetBuddy/NetworkViewModel.swift" : {
+    "const-values" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/NetworkViewModel.swiftconstvalues",
+    "dependencies" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/NetworkViewModel.d",
+    "diagnostics" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/NetworkViewModel.dia",
+    "index-unit-output-path" : "/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/NetworkViewModel.o",
+    "llvm-bc" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/NetworkViewModel.bc",
+    "object" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/NetworkViewModel.o",
+    "swift-dependencies" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/NetworkViewModel.swiftdeps",
+    "swiftmodule" : "/Users/julianalconcher/Documents/MyNetBuddy/.derivedData/Build/Intermediates.noindex/MyNetBuddy.build/Debug/MyNetBuddy.build/Objects-normal/arm64/NetworkViewModel~partial.swiftmodule"
+  }
+}

@@ -1,0 +1,128 @@
+{
+  "source": "/Users/julianalconcher/Documents/MyNetBuddy/MyNetBuddy/MenuBarContentView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Elegi qué conexión querés priorizar y revisá el estado actual de cada interfaz.",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 32
+        }
+      },
+      {
+        "comment": "",
+        "key": "MyNetBuddy",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 23
+        }
+      },
+      {
+        "comment": "",
+        "key": "Refresh",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 26
+        }
+      },
+      {
+        "comment": "",
+        "key": "Prioridad",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 52
+        }
+      },
+      {
+        "comment": "",
+        "key": "Activa",
+        "location": {
+          "startingColumn": 31,
+          "startingLine": 87
+        }
+      },
+      {
+        "comment": "",
+        "key": "Disponible",
+        "location": {
+          "startingColumn": 42,
+          "startingLine": 87
+        }
+      },
+      {
+        "comment": "",
+        "key": "Todavia no encontramos servicios de red. Tocá Refresh para volver a cargar.",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 109
+        }
+      },
+      {
+        "comment": "",
+        "key": "Interfaces",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 100
+        }
+      },
+      {
+        "comment": "",
+        "key": "Sin datos",
+        "location": {
+          "startingColumn": 51,
+          "startingLine": 103
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld",
+        "location": {
+          "startingColumn": 65,
+          "startingLine": 103
+        }
+      },
+      {
+        "comment": "",
+        "key": "#%lld",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 141
+        }
+      },
+      {
+        "comment": "",
+        "key": "Device %@",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 136
+        }
+      },
+      {
+        "comment": "",
+        "key": "Prioridad",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 128
+        }
+      },
+      {
+        "comment": "",
+        "key": "Cambiar la prioridad puede pedir permisos de macOS.",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 177
+        }
+      },
+      {
+        "comment": "",
+        "key": "Salir",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 181
+        }
+      }
+    ]
+  },
+  "version": 1
+}

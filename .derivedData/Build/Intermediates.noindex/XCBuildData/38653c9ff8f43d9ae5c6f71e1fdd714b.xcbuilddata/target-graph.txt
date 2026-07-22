@@ -1,0 +1,2 @@
+Target dependency graph (1 target)
+Target 'MyNetBuddy' in project 'MyNetBuddy' (no dependencies)
