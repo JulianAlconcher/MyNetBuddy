@@ -611,6 +611,7 @@ private final class DownloadThroughputMeasurer: NSObject, URLSessionDataDelegate
         guard let continuation else {
             return
         }
+        self.continuation = nil
         let elapsed = Date().timeIntervalSince(start)
         if elapsed > 0.1 {
             continuation.resume(returning: Double(bytesReceived) * 8 / elapsed / 1_000_000)
