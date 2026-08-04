@@ -45,16 +45,6 @@ struct MenuBarContentView: View {
                 .help("Actualizar estado")
             }
 
-            Text("Elegi qué conexión querés priorizar y revisá el estado actual de cada interfaz.")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-
-            if let message = viewModel.statusMessage {
-                Text(message)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-
             if let errorMessage = viewModel.errorMessage {
                 Text(errorMessage)
                     .font(.caption)
@@ -70,36 +60,40 @@ struct MenuBarContentView: View {
 
             HStack(spacing: 10) {
                 Button {
+                    guard viewModel.canPrioritizeEthernet else { return }
                     viewModel.prioritize(.ethernet)
                 } label: {
                     priorityButtonLabel(
                         title: "Ethernet primero",
                         icon: "cable.connector",
                         isSelected: viewModel.preferredPriority == .ethernet,
+                        isHighlighted: viewModel.preferredPriority == .ethernet
+                            || (viewModel.hasActiveEthernet && !viewModel.hasActiveWiFi),
                         isActive: viewModel.hasActiveEthernet,
                         inactiveText: "Sin cable"
                     )
                 }
                 .buttonStyle(.plain)
-                .disabled(!viewModel.canPrioritizeEthernet)
 
                 Button {
+                    guard viewModel.canPrioritizeWiFi else { return }
                     viewModel.prioritize(.wifi)
                 } label: {
                     priorityButtonLabel(
                         title: "Wi-Fi primero",
                         icon: "wifi",
                         isSelected: viewModel.preferredPriority == .wifi,
+                        isHighlighted: viewModel.preferredPriority == .wifi
+                            || (viewModel.hasActiveWiFi && !viewModel.hasActiveEthernet),
                         isActive: viewModel.hasActiveWiFi,
                         inactiveText: "No conectada"
                     )
                 }
                 .buttonStyle(.plain)
-                .disabled(!viewModel.canPrioritizeWiFi)
             }
 
             if !viewModel.canPrioritizeEthernet {
-                Text("Para elegir la prioridad, Ethernet y Wi-Fi deben estar ambos activos.")
+                Text("Requerís Ethernet y Wi-Fi activos.")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
             }
@@ -110,21 +104,30 @@ struct MenuBarContentView: View {
         title: String,
         icon: String,
         isSelected: Bool,
+        isHighlighted: Bool,
         isActive: Bool,
         inactiveText: String
     ) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Label(title, systemImage: icon)
-                .font(.subheadline.weight(.semibold))
+                .font(.subheadline.weight(.bold))
+                .foregroundStyle(isHighlighted ? Color.accentColor : .primary)
             Text(statusText(isSelected: isSelected, isActive: isActive, inactiveText: inactiveText))
-                .font(.caption)
-                .foregroundStyle(isSelected ? .primary : .secondary)
+                .font(.caption.weight(.medium))
+                .foregroundStyle(isHighlighted ? Color.accentColor : (isSelected ? .primary : .secondary))
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(12)
-        .background(isSelected ? Color.accentColor.opacity(0.18) : Color.gray.opacity(0.12))
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(isHighlighted ? Color.accentColor.opacity(0.25) : Color.gray.opacity(0.12))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .stroke(isHighlighted ? Color.accentColor : Color.clear, lineWidth: 1.5)
+        )
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-        .opacity(isActive || isSelected ? 1 : 0.6)
+        .opacity(isHighlighted ? 1 : (isActive ? 0.8 : 0.4))
     }
 
     private func statusText(isSelected: Bool, isActive: Bool, inactiveText: String) -> String {
@@ -149,7 +152,7 @@ struct MenuBarContentView: View {
             }
 
             if viewModel.services.isEmpty {
-                Text("Todavía no encontramos servicios de red. Tocá el botón de actualizar para volver a cargar.")
+                Text("No se encontraron servicios de red.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             } else {
@@ -315,9 +318,6 @@ struct MenuBarContentView: View {
 
     private var footer: some View {
         HStack {
-            Text("Cambiar la prioridad puede pedir permisos de macOS.")
-                .font(.caption2)
-                .foregroundStyle(.secondary)
             Spacer()
             Button("Salir") {
                 NSApplication.shared.terminate(nil)
