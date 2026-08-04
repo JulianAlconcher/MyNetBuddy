@@ -7,8 +7,12 @@ final class NetworkViewModel: ObservableObject {
     @Published private(set) var preferredPriority: NetworkPriority?
     @Published private(set) var statusMessage: String?
     @Published private(set) var errorMessage: String?
+    @Published private(set) var measuredDownloadMbps: Double?
+    @Published private(set) var speedMeasuredAt: Date?
+    @Published private(set) var isMeasuringSpeed = false
 
     private let serviceManager: NetworkServiceManager
+    private var refreshTimer: Timer?
 
     convenience init() {
         self.init(serviceManager: NetworkServiceManager())
@@ -16,6 +20,41 @@ final class NetworkViewModel: ObservableObject {
 
     init(serviceManager: NetworkServiceManager) {
         self.serviceManager = serviceManager
+    }
+
+    func startAutoRefresh(interval: TimeInterval = 5) {
+        refresh()
+        guard refreshTimer == nil else {
+            return
+        }
+        let timer = Timer(timeInterval: interval, repeats: true) { _ in
+            Task { @MainActor [weak self] in
+                self?.refresh()
+            }
+        }
+        RunLoop.main.add(timer, forMode: .common)
+        refreshTimer = timer
+    }
+
+    func stopAutoRefresh() {
+        refreshTimer?.invalidate()
+        refreshTimer = nil
+    }
+
+    func measureDownloadSpeed() {
+        guard !isMeasuringSpeed else {
+            return
+        }
+        isMeasuringSpeed = true
+        Task { [weak self] in
+            guard let self else {
+                return
+            }
+            let result = await self.serviceManager.measureDownloadMbps()
+            self.measuredDownloadMbps = result
+            self.speedMeasuredAt = Date()
+            self.isMeasuringSpeed = false
+        }
     }
 
     var menuBarIconName: String {
@@ -46,11 +85,20 @@ final class NetworkViewModel: ObservableObject {
     }
 
     var priorityServices: [NetworkService] {
-        services.filter { $0.kind != .other }
+        activeFirst(services.filter { $0.kind != .other })
     }
 
     var otherServices: [NetworkService] {
-        services.filter { $0.kind == .other }
+        activeFirst(services.filter { $0.kind == .other })
+    }
+
+    private func activeFirst(_ services: [NetworkService]) -> [NetworkService] {
+        services.sorted { lhs, rhs in
+            if lhs.isEnabled != rhs.isEnabled {
+                return lhs.isEnabled
+            }
+            return lhs.order < rhs.order
+        }
     }
 
     func refresh() {

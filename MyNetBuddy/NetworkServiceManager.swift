@@ -47,6 +47,11 @@ final class NetworkServiceManager {
         return snapshot(from: updatedServices)
     }
 
+    func measureDownloadMbps(duration: TimeInterval = 5) async -> Double? {
+        let measurer = DownloadThroughputMeasurer(duration: duration)
+        return await measurer.run()
+    }
+
     private func fetchOrderedServicesFromNetworkSetup() throws -> [ParsedService] {
         let orderOutput: String
 
@@ -56,13 +61,8 @@ final class NetworkServiceManager {
     }
 
     private func snapshot(from parsedServices: [ParsedService]) -> NetworkSnapshot {
-        let preferredKind = preferredPriority(from: parsedServices)
-
-        let services = parsedServices.enumerated().map { index, parsed in
+        let baseServices = parsedServices.enumerated().map { index, parsed in
             let ipAddress = currentIPAddress(for: parsed.device)
-            let linkDescription = linkSpeedDescription(for: parsed.device, kind: parsed.kind)
-            let detailSummary = detailSummary(for: parsed.device, kind: parsed.kind)
-
             return NetworkService(
                 id: parsed.displayName,
                 displayName: parsed.displayName,
@@ -72,13 +72,40 @@ final class NetworkServiceManager {
                 order: index + 1,
                 isEnabled: ipAddress != nil,
                 ipAddress: ipAddress,
-                linkDescription: linkDescription,
-                detailSummary: detailSummary,
-                isCurrentTopPriority: index == 0
+                linkDescription: linkSpeedDescription(for: parsed.device, kind: parsed.kind),
+                detailSummary: detailSummary(for: parsed.device, kind: parsed.kind),
+                isCurrentTopPriority: false
             )
         }
 
-        let preferredPriority = preferredKind
+        let preferredPriority = preferredPriority(from: baseServices)
+        let topServiceID = baseServices.first { service in
+            guard let preferredPriority else {
+                return false
+            }
+            switch (service.kind, preferredPriority) {
+            case (.ethernet, .ethernet), (.wifi, .wifi):
+                return service.isEnabled
+            default:
+                return false
+            }
+        }?.id
+
+        let services = baseServices.map { service in
+            NetworkService(
+                id: service.id,
+                displayName: service.displayName,
+                device: service.device,
+                hardwarePort: service.hardwarePort,
+                kind: service.kind,
+                order: service.order,
+                isEnabled: service.isEnabled,
+                ipAddress: service.ipAddress,
+                linkDescription: service.linkDescription,
+                detailSummary: service.detailSummary,
+                isCurrentTopPriority: service.id == topServiceID
+            )
+        }
 
         return NetworkSnapshot(services: services, preferredPriority: preferredPriority)
     }
@@ -129,6 +156,10 @@ final class NetworkServiceManager {
         case .wifi:
             var pieces: [String] = []
             if let iface = wifiInterface() {
+                let rate = iface.transmitRate()
+                if rate > 0 {
+                    pieces.append("Enlace \(String(format: "%.0f", rate)) Mbps")
+                }
                 if let ssid = iface.ssid(), !ssid.isEmpty {
                     pieces.append("SSID \(ssid)")
                 }
@@ -276,7 +307,18 @@ final class NetworkServiceManager {
         return orderedServices
     }
 
-    private func preferredPriority(from services: [ParsedService]) -> NetworkPriority? {
+    private func preferredPriority(from services: [NetworkService]) -> NetworkPriority? {
+        let ethernetActive = services.contains { $0.kind == .ethernet && $0.isEnabled }
+        let wifiActive = services.contains { $0.kind == .wifi && $0.isEnabled }
+
+        if ethernetActive != wifiActive {
+            return ethernetActive ? .ethernet : .wifi
+        }
+
+        guard ethernetActive else {
+            return nil
+        }
+
         for service in services {
             switch service.kind {
             case .ethernet:
@@ -526,4 +568,55 @@ private struct CommandResult {
     let stdout: String
     let stderr: String
     let exitCode: Int32
+}
+
+private final class DownloadThroughputMeasurer: NSObject, URLSessionDataDelegate, @unchecked Sendable {
+    private let duration: TimeInterval
+    private let start = Date()
+    private var bytesReceived = 0
+    private var continuation: CheckedContinuation<Double?, Never>?
+
+    init(duration: TimeInterval) {
+        self.duration = duration
+    }
+
+    func run() async -> Double? {
+        guard let url = URL(string: "https://speed.cloudflare.com/__down?bytes=90000000") else {
+            return nil
+        }
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.timeoutIntervalForRequest = 3
+        configuration.timeoutIntervalForResource = 15
+        configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
+        let session = URLSession(configuration: configuration, delegate: self, delegateQueue: nil)
+        let task = session.dataTask(with: url)
+        return await withCheckedContinuation { continuation in
+            self.continuation = continuation
+            task.resume()
+        }
+    }
+
+    func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
+        bytesReceived += data.count
+        if Date().timeIntervalSince(start) >= duration {
+            finish(session)
+        }
+    }
+
+    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+        finish(session)
+    }
+
+    private func finish(_ session: URLSession) {
+        guard let continuation else {
+            return
+        }
+        let elapsed = Date().timeIntervalSince(start)
+        if elapsed > 0.1 {
+            continuation.resume(returning: Double(bytesReceived) * 8 / elapsed / 1_000_000)
+        } else {
+            continuation.resume(returning: nil)
+        }
+        session.invalidateAndCancel()
+    }
 }

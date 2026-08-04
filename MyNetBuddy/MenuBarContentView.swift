@@ -12,8 +12,16 @@ struct MenuBarContentView: View {
             footer
         }
         .padding(16)
-        .task {
-            viewModel.refresh()
+        .onAppear {
+            viewModel.startAutoRefresh()
+            if viewModel.measuredDownloadMbps == nil
+                || Date().timeIntervalSince(viewModel.speedMeasuredAt ?? .distantPast) > 60
+            {
+                viewModel.measureDownloadSpeed()
+            }
+        }
+        .onDisappear {
+            viewModel.stopAutoRefresh()
         }
     }
 
@@ -59,7 +67,9 @@ struct MenuBarContentView: View {
                     priorityButtonLabel(
                         title: "Ethernet primero",
                         icon: "cable.connector",
-                        isSelected: viewModel.preferredPriority == .ethernet
+                        isSelected: viewModel.preferredPriority == .ethernet,
+                        isActive: viewModel.hasActiveEthernet,
+                        inactiveText: "Sin cable"
                     )
                 }
                 .buttonStyle(.plain)
@@ -71,7 +81,9 @@ struct MenuBarContentView: View {
                     priorityButtonLabel(
                         title: "Wi-Fi primero",
                         icon: "wifi",
-                        isSelected: viewModel.preferredPriority == .wifi
+                        isSelected: viewModel.preferredPriority == .wifi,
+                        isActive: viewModel.hasActiveWiFi,
+                        inactiveText: "No conectada"
                     )
                 }
                 .buttonStyle(.plain)
@@ -86,11 +98,17 @@ struct MenuBarContentView: View {
         }
     }
 
-    private func priorityButtonLabel(title: String, icon: String, isSelected: Bool) -> some View {
+    private func priorityButtonLabel(
+        title: String,
+        icon: String,
+        isSelected: Bool,
+        isActive: Bool,
+        inactiveText: String
+    ) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Label(title, systemImage: icon)
                 .font(.subheadline.weight(.semibold))
-            Text(isSelected ? "Activa" : "Disponible")
+            Text(statusText(isSelected: isSelected, isActive: isActive, inactiveText: inactiveText))
                 .font(.caption)
                 .foregroundStyle(isSelected ? .primary : .secondary)
         }
@@ -98,6 +116,17 @@ struct MenuBarContentView: View {
         .padding(12)
         .background(isSelected ? Color.accentColor.opacity(0.18) : Color.gray.opacity(0.12))
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .opacity(isActive || isSelected ? 1 : 0.6)
+    }
+
+    private func statusText(isSelected: Bool, isActive: Bool, inactiveText: String) -> String {
+        if isSelected {
+            return "Activa"
+        }
+        if !isActive {
+            return inactiveText
+        }
+        return "Disponible"
     }
 
     private var servicesSection: some View {
@@ -178,7 +207,14 @@ struct MenuBarContentView: View {
             HStack(spacing: 12) {
                 metric(title: "Estado", value: service.statusLabel)
                 metric(title: "IP", value: service.ipAddress ?? "N/D")
-                metric(title: "Velocidad", value: service.linkDescription)
+                if service.kind == .wifi {
+                    metric(
+                        title: "Descarga",
+                        value: viewModel.isMeasuringSpeed ? "Midiendo…" : speedLabel(viewModel.measuredDownloadMbps)
+                    )
+                } else {
+                    metric(title: "Velocidad", value: service.linkDescription)
+                }
             }
 
             if let details = service.detailSummary {
@@ -186,11 +222,51 @@ struct MenuBarContentView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
+
+            if service.kind == .wifi {
+                HStack(spacing: 8) {
+                    Button {
+                        viewModel.measureDownloadSpeed()
+                    } label: {
+                        Label(
+                            viewModel.isMeasuringSpeed ? "Midiendo…" : "Medir velocidad",
+                            systemImage: viewModel.isMeasuringSpeed ? "arrow.triangle.2.circlepath" : "gauge.with.dots.needle.67percent"
+                        )
+                        .font(.caption)
+                    }
+                    .buttonStyle(.borderless)
+                    .disabled(viewModel.isMeasuringSpeed)
+                    if let measuredAt = viewModel.speedMeasuredAt {
+                        Text("Medida \(relativeTime(measuredAt))")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
         }
         .padding(12)
         .background(service.isEnabled ? Color.gray.opacity(0.08) : Color.gray.opacity(0.04))
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         .opacity(service.isEnabled ? 1 : 0.55)
+    }
+
+    private func speedLabel(_ value: Double?) -> String {
+        guard let value else {
+            return "—"
+        }
+        if value < 10 {
+            return String(format: "%.1f Mbps", value)
+        }
+        return String(format: "%.0f Mbps", value)
+    }
+
+    private func relativeTime(_ date: Date) -> String {
+        let interval = Int(Date().timeIntervalSince(date))
+        let formatter = DateComponentsFormatter()
+        formatter.allowedUnits = [.hour, .minute, .second]
+        formatter.maximumUnitCount = 2
+        formatter.unitsStyle = .abbreviated
+        return formatter.string(from: TimeInterval(max(interval, 0))) ?? "ahora"
     }
 
     private func metric(title: String, value: String) -> some View {
