@@ -1,3 +1,4 @@
+import CoreWLAN
 import Foundation
 
 struct NetworkSnapshot {
@@ -113,15 +114,9 @@ final class NetworkServiceManager {
             }
             return "Sin enlace"
         case .wifi:
-            let airportOutput = runQuietCommand(
-                launchPath: "/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport",
-                arguments: ["-I"]
-            )
-            if let rateLine = airportOutput
-                .split(separator: "\n")
-                .first(where: { $0.localizedCaseInsensitiveContains("lastTxRate") }) {
-                let value = rateLine.split(separator: ":").last?.trimmingCharacters(in: .whitespaces) ?? ""
-                return value.isEmpty ? "Wi-Fi detectado" : "\(value) Mbps"
+            let rate = wifiInterface()?.transmitRate() ?? 0
+            if rate > 0 {
+                return String(format: "%.0f Mbps", rate)
             }
             return "Wi-Fi detectado"
         case .other:
@@ -132,26 +127,22 @@ final class NetworkServiceManager {
     private func detailSummary(for device: String, kind: NetworkServiceKind) -> String? {
         switch kind {
         case .wifi:
-            let airportOutput = runQuietCommand(
-                launchPath: "/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport",
-                arguments: ["-I"]
-            )
-            let ssid = airportValue(named: "SSID", in: airportOutput)
-            let bssid = airportValue(named: "BSSID", in: airportOutput)
-            let noise = airportValue(named: "agrCtlNoise", in: airportOutput)
-            let rssi = airportValue(named: "agrCtlRSSI", in: airportOutput)
             var pieces: [String] = []
-            if let ssid {
-                pieces.append("SSID \(ssid)")
-            }
-            if let bssid {
-                pieces.append("BSSID \(bssid)")
-            }
-            if let rssi {
-                pieces.append("RSSI \(rssi)")
-            }
-            if let noise {
-                pieces.append("Noise \(noise)")
+            if let iface = wifiInterface() {
+                if let ssid = iface.ssid(), !ssid.isEmpty {
+                    pieces.append("SSID \(ssid)")
+                }
+                if let bssid = iface.bssid(), !bssid.isEmpty {
+                    pieces.append("BSSID \(bssid)")
+                }
+                let rssi = iface.rssiValue()
+                if rssi != 0 {
+                    pieces.append("RSSI \(rssi)")
+                }
+                let noise = iface.noiseMeasurement()
+                if noise != 0 {
+                    pieces.append("Noise \(noise)")
+                }
             }
             return pieces.isEmpty ? nil : pieces.joined(separator: "  ·  ")
         case .ethernet:
@@ -165,13 +156,8 @@ final class NetworkServiceManager {
         }
     }
 
-    private func airportValue(named key: String, in output: String) -> String? {
-        output
-            .split(separator: "\n")
-            .first(where: { $0.trimmingCharacters(in: .whitespaces).hasPrefix("\(key):") })?
-            .split(separator: ":", maxSplits: 1)
-            .last?
-            .trimmingCharacters(in: .whitespaces)
+    private func wifiInterface() -> CWInterface? {
+        CWWiFiClient.shared().interfaces()?.first
     }
 
     private func parseServiceOrder(from output: String) -> [ParsedService] {
@@ -186,7 +172,10 @@ final class NetworkServiceManager {
 
             let displayName = lineName(from: line)
 
-            let detailLine = lines[index + 1].trimmingCharacters(in: .whitespaces)
+            let detailLine = lines[index + 1]
+                .trimmingCharacters(in: .whitespaces)
+                .replacingOccurrences(of: "(", with: "")
+                .replacingOccurrences(of: ")", with: "")
             guard detailLine.hasPrefix("Hardware Port:") else {
                 continue
             }
@@ -201,14 +190,18 @@ final class NetworkServiceManager {
             }
 
             let hardwarePort = components[0]
-            let device = components[1].replacingOccurrences(of: "Device: ", with: "")
+            var device = components[1]
+            if device.hasPrefix("Device:") {
+                device = String(device.dropFirst("Device:".count))
+            }
+            device = device.trimmingCharacters(in: .whitespaces)
 
             services.append(
                 ParsedService(
                     displayName: displayName.isEmpty ? hardwarePort : displayName,
                     hardwarePort: hardwarePort,
                     device: device,
-                    kind: classify(hardwarePort: hardwarePort)
+                    kind: classify(hardwarePort: hardwarePort, displayName: displayName)
                 )
             )
         }
@@ -306,12 +299,16 @@ final class NetworkServiceManager {
         return String(line[nameStart...]).trimmingCharacters(in: .whitespaces)
     }
 
-    private func classify(hardwarePort: String) -> NetworkServiceKind {
-        let lowercased = hardwarePort.lowercased()
-        if lowercased.contains("wi-fi") || lowercased.contains("wifi") || lowercased.contains("air") {
+    private func classify(hardwarePort: String, displayName: String) -> NetworkServiceKind {
+        let lowercasedPort = hardwarePort.lowercased()
+        let lowercasedName = displayName.lowercased()
+
+        if lowercasedPort.contains("wi-fi") || lowercasedPort.contains("wifi") || lowercasedPort.contains("air")
+            || lowercasedName.contains("wi-fi") || lowercasedName.contains("wifi") {
             return .wifi
         }
-        if lowercased.contains("ethernet") || lowercased.contains("lan") || lowercased.contains("thunderbolt bridge") {
+        if lowercasedPort.contains("ethernet") || lowercasedPort.contains("lan") || lowercasedPort.contains("thunderbolt bridge")
+            || lowercasedName.contains("ethernet") {
             return .ethernet
         }
         return .other

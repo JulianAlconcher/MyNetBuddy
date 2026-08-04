@@ -77,6 +77,12 @@ struct MenuBarContentView: View {
                 .buttonStyle(.plain)
                 .disabled(!viewModel.canPrioritizeWiFi)
             }
+
+            if !viewModel.canPrioritizeEthernet {
+                Text("Para elegir la prioridad, Ethernet y Wi-Fi deben estar ambos activos.")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
         }
     }
 
@@ -110,10 +116,36 @@ struct MenuBarContentView: View {
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             } else {
-                ForEach(viewModel.services) { service in
+                ForEach(viewModel.priorityServices) { service in
                     serviceCard(service)
                 }
+                if !viewModel.otherServices.isEmpty {
+                    otherServicesSection
+                }
             }
+        }
+    }
+
+    private var otherServicesSection: some View {
+        DisclosureGroup {
+            VStack(alignment: .leading, spacing: 6) {
+                ForEach(viewModel.otherServices) { service in
+                    HStack(spacing: 8) {
+                        Label(service.displayName, systemImage: service.kind.iconName)
+                            .font(.caption)
+                        Spacer()
+                        Text(service.device.isEmpty ? "Sin enlace" : service.device)
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.vertical, 2)
+                }
+            }
+            .padding(.top, 4)
+        } label: {
+            Text("Otras interfaces (\(viewModel.otherServices.count))")
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(.secondary)
         }
     }
 
@@ -156,8 +188,9 @@ struct MenuBarContentView: View {
             }
         }
         .padding(12)
-        .background(Color.gray.opacity(0.08))
+        .background(service.isEnabled ? Color.gray.opacity(0.08) : Color.gray.opacity(0.04))
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .opacity(service.isEnabled ? 1 : 0.55)
     }
 
     private func metric(title: String, value: String) -> some View {

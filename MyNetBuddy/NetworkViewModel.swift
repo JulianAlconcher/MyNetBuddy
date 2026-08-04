@@ -30,11 +30,27 @@ final class NetworkViewModel: ObservableObject {
     }
 
     var canPrioritizeEthernet: Bool {
-        services.contains(where: { $0.kind == .ethernet })
+        hasActiveEthernet && hasActiveWiFi
     }
 
     var canPrioritizeWiFi: Bool {
-        services.contains(where: { $0.kind == .wifi })
+        hasActiveEthernet && hasActiveWiFi
+    }
+
+    var hasActiveEthernet: Bool {
+        services.contains(where: { $0.kind == .ethernet && $0.isEnabled })
+    }
+
+    var hasActiveWiFi: Bool {
+        services.contains(where: { $0.kind == .wifi && $0.isEnabled })
+    }
+
+    var priorityServices: [NetworkService] {
+        services.filter { $0.kind != .other }
+    }
+
+    var otherServices: [NetworkService] {
+        services.filter { $0.kind == .other }
     }
 
     func refresh() {

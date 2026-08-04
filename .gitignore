@@ -24,3 +24,6 @@ Carthage/Build/
 
 # macOS
 .DS_Store
+
+# Code coverage
+*.profraw
