@@ -85,11 +85,14 @@ final class NetworkViewModel: ObservableObject {
     }
 
     var priorityServices: [NetworkService] {
-        activeFirst(services.filter { $0.kind != .other })
+        let ethernet = activeFirst(services.filter { $0.kind == .ethernet }).first
+        let wifi = activeFirst(services.filter { $0.kind == .wifi }).first
+        return [ethernet, wifi].compactMap { $0 }
     }
 
     var otherServices: [NetworkService] {
-        activeFirst(services.filter { $0.kind == .other })
+        let primaryIDs = Set(priorityServices.map(\.id))
+        return activeFirst(services.filter { !primaryIDs.contains($0.id) })
     }
 
     private func activeFirst(_ services: [NetworkService]) -> [NetworkService] {

@@ -3,6 +3,8 @@ import SwiftUI
 
 struct MenuBarContentView: View {
     @ObservedObject var viewModel: NetworkViewModel
+    @State private var refreshRotation = 0.0
+    @State private var showOtherServices = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -31,10 +33,16 @@ struct MenuBarContentView: View {
                 Label("MyNetBuddy", systemImage: "network")
                     .font(.headline)
                 Spacer()
-                Button("Refresh") {
+                Button {
+                    refreshRotation += 360
                     viewModel.refresh()
+                } label: {
+                    Image(systemName: "arrow.clockwise")
+                        .rotationEffect(.degrees(refreshRotation))
+                        .animation(.spring(response: 0.4, dampingFraction: 0.7), value: refreshRotation)
                 }
                 .buttonStyle(.borderless)
+                .help("Actualizar estado")
             }
 
             Text("Elegi qué conexión querés priorizar y revisá el estado actual de cada interfaz.")
@@ -141,7 +149,7 @@ struct MenuBarContentView: View {
             }
 
             if viewModel.services.isEmpty {
-                Text("Todavia no encontramos servicios de red. Tocá Refresh para volver a cargar.")
+                Text("Todavía no encontramos servicios de red. Tocá el botón de actualizar para volver a cargar.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             } else {
@@ -156,25 +164,42 @@ struct MenuBarContentView: View {
     }
 
     private var otherServicesSection: some View {
-        DisclosureGroup {
-            VStack(alignment: .leading, spacing: 6) {
-                ForEach(viewModel.otherServices) { service in
-                    HStack(spacing: 8) {
-                        Label(service.displayName, systemImage: service.kind.iconName)
-                            .font(.caption)
-                        Spacer()
-                        Text(service.device.isEmpty ? "Sin enlace" : service.device)
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                    }
-                    .padding(.vertical, 2)
+        VStack(alignment: .leading, spacing: 6) {
+            Button {
+                withAnimation(.easeInOut(duration: 0.15)) {
+                    showOtherServices.toggle()
                 }
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "chevron.right")
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                        .rotationEffect(.degrees(showOtherServices ? 90 : 0))
+                    Text("Otras interfaces (\(viewModel.otherServices.count))")
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                }
+                .contentShape(Rectangle())
             }
-            .padding(.top, 4)
-        } label: {
-            Text("Otras interfaces (\(viewModel.otherServices.count))")
-                .font(.subheadline.weight(.medium))
-                .foregroundStyle(.secondary)
+            .buttonStyle(.plain)
+
+            if showOtherServices {
+                VStack(alignment: .leading, spacing: 6) {
+                    ForEach(viewModel.otherServices) { service in
+                        HStack(spacing: 8) {
+                            Label(service.displayName, systemImage: service.kind.iconName)
+                                .font(.caption)
+                            Spacer()
+                            Text(service.device.isEmpty ? "Sin enlace" : service.device)
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                        }
+                        .padding(.vertical, 2)
+                    }
+                }
+                .padding(.top, 4)
+            }
         }
     }
 
@@ -228,14 +253,21 @@ struct MenuBarContentView: View {
                     Button {
                         viewModel.measureDownloadSpeed()
                     } label: {
-                        Label(
-                            viewModel.isMeasuringSpeed ? "Midiendo…" : "Medir velocidad",
-                            systemImage: viewModel.isMeasuringSpeed ? "arrow.triangle.2.circlepath" : "gauge.with.dots.needle.67percent"
-                        )
+                        Label {
+                            Text(viewModel.isMeasuringSpeed ? "Midiendo…" : "Medir velocidad")
+                        } icon: {
+                            if viewModel.isMeasuringSpeed {
+                                ProgressView()
+                                    .controlSize(.small)
+                            } else {
+                                Image(systemName: "gauge.with.dots.needle.67percent")
+                            }
+                        }
                         .font(.caption)
                     }
                     .buttonStyle(.borderless)
                     .disabled(viewModel.isMeasuringSpeed)
+                    .help("Medir la velocidad real de descarga")
                     if let measuredAt = viewModel.speedMeasuredAt {
                         Text("Medida \(relativeTime(measuredAt))")
                             .font(.caption2)
@@ -291,6 +323,7 @@ struct MenuBarContentView: View {
                 NSApplication.shared.terminate(nil)
             }
             .buttonStyle(.borderless)
+            .help("Cerrar MyNetBuddy")
         }
     }
 }
