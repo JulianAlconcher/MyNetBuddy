@@ -137,6 +137,9 @@ final class NetworkServiceManager {
         case .ethernet:
             let output = runQuietCommand(launchPath: "/sbin/ifconfig", arguments: [device])
             if output.contains("status: active") {
+                if let mbps = ethernetLinkMbps(from: output) {
+                    return "\(mbps) Mbps"
+                }
                 return "Cable conectado"
             }
             return "Sin enlace"
@@ -149,6 +152,18 @@ final class NetworkServiceManager {
         case .other:
             return "Interfaz disponible"
         }
+    }
+
+    private func ethernetLinkMbps(from output: String) -> Int? {
+        guard let mediaLine = output.split(separator: "\n").first(where: {
+            $0.trimmingCharacters(in: .whitespaces).hasPrefix("media:")
+        })?.trimmingCharacters(in: .whitespaces) else {
+            return nil
+        }
+        guard let range = mediaLine.range(of: #"(\d+)\s*base"#, options: .regularExpression) else {
+            return nil
+        }
+        return Int(mediaLine[range].filter(\.isNumber))
     }
 
     private func detailSummary(for device: String, kind: NetworkServiceKind) -> String? {
@@ -179,7 +194,12 @@ final class NetworkServiceManager {
         case .ethernet:
             let output = runQuietCommand(launchPath: "/sbin/ifconfig", arguments: [device])
             if output.contains("status: active") {
-                return "Interfaz cableada lista para priorizar."
+                var pieces: [String] = []
+                if let mbps = ethernetLinkMbps(from: output) {
+                    pieces.append("\(mbps) Mbps")
+                }
+                pieces.append("Cable conectado")
+                return pieces.joined(separator: "  ·  ")
             }
             return "Conecta un cable para que esta interfaz entre en uso."
         case .other:

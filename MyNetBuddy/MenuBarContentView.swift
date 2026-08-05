@@ -30,7 +30,7 @@ struct MenuBarContentView: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
-                Label("MyNetBuddy", systemImage: "network")
+                Text("MyNetBuddy")
                     .font(.headline)
                 Spacer()
                 Button {
@@ -235,13 +235,14 @@ struct MenuBarContentView: View {
             HStack(spacing: 12) {
                 metric(title: "Estado", value: service.statusLabel)
                 metric(title: "IP", value: service.ipAddress ?? "N/D")
-                if service.kind == .wifi {
+                if service.kind == .ethernet {
+                    metric(title: "Velocidad", value: service.linkDescription)
+                }
+                if service.isCurrentTopPriority {
                     metric(
                         title: "Descarga",
                         value: viewModel.isMeasuringSpeed ? "Midiendo…" : speedLabel(viewModel.measuredDownloadMbps)
                     )
-                } else {
-                    metric(title: "Velocidad", value: service.linkDescription)
                 }
             }
 
@@ -251,7 +252,7 @@ struct MenuBarContentView: View {
                     .foregroundStyle(.secondary)
             }
 
-            if service.kind == .wifi {
+            if service.isCurrentTopPriority {
                 HStack(spacing: 8) {
                     Button {
                         viewModel.measureDownloadSpeed()
